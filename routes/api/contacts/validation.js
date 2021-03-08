@@ -1,4 +1,5 @@
 const Joi = require('joi')
+const { HttpCode } = require('../../../helpers/constants')
 
 // === schema ADD ===
 const schemaAddContact = Joi.object({
@@ -9,13 +10,13 @@ const schemaAddContact = Joi.object({
       minDomainSegments: 2,
       tlds: { allow: ['com', 'net'] },
     })
-    .optional(),
+    .required(),
 
   phone: Joi.string()
     .regex(/^\d{3}-\d{3}-\d{4}$/)
     .required(),
 
-  coordinates: Joi.string().min(15).max(38).optional(),
+  subscription: Joi.string().min(2).max(60).required(),
 })
 
 // === schema UPDATE ===
@@ -23,6 +24,7 @@ const schemaUpdateContact = Joi.object({
   name: Joi.string().min(2).max(60).optional(),
   email: Joi.string().min(2).max(60).optional(),
   phone: Joi.string().min(2).max(60).optional(),
+  subscription: Joi.string().min(2).max(60).optional(),
 })
 
 const validate = (schema, obj, next) => {
@@ -30,7 +32,7 @@ const validate = (schema, obj, next) => {
 
   if (Object.keys(obj).length === 0) {
     return next({
-      status: 400,
+      status: HttpCode.BAD_REQUEST,
       message: 'missing fields',
     })
   }
@@ -39,7 +41,7 @@ const validate = (schema, obj, next) => {
     const field = error.details[0].path[0]
 
     return next({
-      status: 400,
+      status: HttpCode.BAD_REQUEST,
       message: `missing required ${field} field`,
     })
   }
