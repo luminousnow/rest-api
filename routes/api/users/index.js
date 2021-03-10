@@ -18,6 +18,11 @@ router.post('/auth/logout', guard, userController.logOut)
 router.get('/current', guard, userController.getUser)
 
 // === router PATCH ===
-router.get('/avatars', guard, upload.single('avatar'), userController.setAvatar)
+router.patch(
+  '/avatars',
+  guard,
+  upload.single('avatar'),
+  userController.setAvatar,
+)
 
 module.exports = router
