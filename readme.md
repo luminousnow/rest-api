@@ -35,6 +35,11 @@
   - Приховано роути
 
 - hw05
+
+  - Інстальовано пакети npm i multer gravatar -E
+  - Створено теки public/images, налаштовано роздачу статики для public
+  - Для userSchema додано avatarURL
+
 - hw06
 
 Каждая новая ветка для дз должна делаться с master
