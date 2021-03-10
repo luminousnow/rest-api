@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs')
 require('dotenv').config()
 const SALT_WORK_FACTOR = 8
 const { Subscription, Owner } = require('../../helpers/constants')
+const gravatar = require('gravatar')
 
 const userSchema = new Schema(
   {
@@ -13,6 +14,7 @@ const userSchema = new Schema(
       maxlength: 60,
       default: 'Default User',
     },
+
     email: {
       type: String,
       unique: true,
@@ -23,6 +25,7 @@ const userSchema = new Schema(
       },
       default: 'example@email.com',
     },
+
     password: {
       type: String,
       require: [true, 'Set user Password'],
@@ -34,6 +37,14 @@ const userSchema = new Schema(
       enum: [Subscription.FREE, Subscription.PRO, Subscription.PREMIUM],
       default: Subscription.FREE,
     },
+
+    avatar: {
+      type: String,
+      default: function () {
+        return gravatar.url(this.email, { s: '250' }, true)
+      },
+    },
+
     token: {
       type: String,
       default: null,
