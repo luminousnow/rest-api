@@ -38,7 +38,7 @@ const userSchema = new Schema(
       default: Subscription.FREE,
     },
 
-    avatar: {
+    avatarURL: {
       type: String,
       default: function () {
         return gravatar.url(this.email, { s: '250' }, true)
