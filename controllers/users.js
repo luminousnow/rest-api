@@ -1,7 +1,10 @@
-require('dotenv').config()
 const jwt = require('jsonwebtoken')
-const Users = require('../model/users') // findByEmail, findById, findByToken, create, updateToken
+const fs = require('fs/promises')
+const path = require('path')
+const Users = require('../model/users') // findByEmail, findById, findByToken, create, updateToken, updateAvatar
+const createFolder = require('../helpers/create-dir')
 const { HttpCode } = require('../helpers/constants')
+require('dotenv').config()
 const SECRET_KEY = process.env.JWT_SECRET
 
 // === REGISTRATION ===
@@ -26,6 +29,7 @@ const reg = async (req, res, next) => {
         user: {
           name: newUser.name,
           email: newUser.email,
+          avatar: newUser.avatarURL,
           subscription: newUser.subscription,
         },
       },
@@ -40,7 +44,7 @@ const logIn = async (req, res, next) => {
   try {
     const { email, password } = req.body
     const user = await Users.findByEmail(email)
-    const isValidPassword = await user.validPassword(password)
+    const isValidPassword = await user?.validPassword(password)
 
     if (!user || !isValidPassword) {
       return res.status(HttpCode.UNAUTHORIZED).json({
@@ -81,8 +85,9 @@ const logOut = async (req, res, next) => {
 // === GET USER ===
 const getUser = async (req, res, next) => {
   try {
-    const [, token] = req.get('Authorization').split(' ')
+    const token = req.get('Authorization')?.split(' ')[1]
     const user = await Users.findByToken(token)
+
     if (!user) {
       return res.status(HttpCode.UNAUTHORIZED).json({
         status: 'error',
@@ -106,4 +111,38 @@ const getUser = async (req, res, next) => {
   }
 }
 
-module.exports = { reg, logIn, logOut, getUser }
+// === PATCH AVATAR ===
+const setAvatar = async (req, res, next) => {
+  try {
+    const id = req.user.id
+    const AVATAR_OF_USER = process.env.AVATAR_OF_USER
+    const pathFileAvatar = req.file.path
+    const newNameAvatar = `${Date.now()}-${req.file.originalname}`
+
+    await createFolder(path.join(AVATAR_OF_USER, id))
+    await fs.rename(
+      pathFileAvatar,
+      path.join(AVATAR_OF_USER, id, newNameAvatar),
+    )
+    const avatarPath = path.normalize(path.join(id, newNameAvatar))
+    try {
+      // РОЗІБРАТИСЯ. Не видаляє попереднє зображення.
+      // Не оновлює запис в БД. Залишається прописаним Граватар
+      await fs.unlink(
+        path.join(process.cwd(), AVATAR_OF_USER, req.user.avatarURL),
+      )
+    } catch (error) {
+      console.log(error.message)
+    }
+    await Users.updateAvatar(id, avatarPath)
+    return res.json({
+      status: 'success',
+      code: HttpCode.OK,
+      deta: { avatarPath },
+    })
+  } catch (error) {
+    next(error)
+  }
+}
+
+module.exports = { reg, logIn, logOut, getUser, setAvatar }
