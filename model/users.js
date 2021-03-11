@@ -28,8 +28,8 @@ const updateToken = async (id, token) => {
 }
 
 // === UPDATE avatar  ===
-const updateAvatar = async (id, avatar) => {
-  return await User.updateOne({ _id: id }, { avatar })
+const updateAvatar = async (id, avatarPath) => {
+  return await User.updateOne({ _id: id }, { avatarURL: avatarPath })
 }
 
 module.exports = {
