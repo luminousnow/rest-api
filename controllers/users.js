@@ -116,23 +116,7 @@ const setAvatar = async (req, res, next) => {
   try {
     const id = req.user.id
     const avatarURL = req.user.avatarURL
-    const AVATAR_OF_USER = process.env.AVATAR_OF_USER
-    const pathFileAvatar = req.file.path
-    const newNameAvatar = `${Date.now()}-${req.file.originalname}`
-
-    // await createFolder(path.join(AVATAR_OF_USER, id))
-    await fs.rename(pathFileAvatar, path.join(AVATAR_OF_USER, newNameAvatar))
-    const avatarPath = path.normalize(path.join(id, newNameAvatar))
-
-    // // Feature for the future. Delete the previous image.
-
-    // try {
-    //   await fs.unlink(
-    //     path.join(process.cwd(), AVATAR_OF_USER, req.user.avatarURL),
-    //   )
-    // } catch (error) {
-    //   console.log(error.message)
-    // }
+    const avatarPath = await saveAvatarToStatic(req)
 
     await Users.updateAvatar(id, avatarPath)
     return res.status(HttpCode.OK).json({
@@ -145,4 +129,32 @@ const setAvatar = async (req, res, next) => {
   }
 }
 
-module.exports = { reg, logIn, logOut, getUser, setAvatar }
+const saveAvatarToStatic = async req => {
+  const AVATAR_OF_USER = process.env.AVATAR_OF_USER
+  const pathFileAvatar = req.file.path
+  const newNameAvatar = `${Date.now()}-${req.file.originalname}`
+
+  // await createFolder(path.join(AVATAR_OF_USER, id))
+  await fs.rename(pathFileAvatar, path.join(AVATAR_OF_USER, newNameAvatar))
+  const avatarPath = path.normalize(path.join(newNameAvatar))
+
+  // // Feature for the future. Delete the previous image.
+
+  // try {
+  //   await fs.unlink(
+  //     path.join(process.cwd(), AVATAR_OF_USER, req.user.avatarURL),
+  //   )
+  // } catch (error) {
+  //   console.log(error.message)
+  // }
+
+  return avatarPath
+}
+
+module.exports = {
+  reg,
+  logIn,
+  logOut,
+  getUser,
+  setAvatar,
+}
