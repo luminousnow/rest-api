@@ -40,10 +40,22 @@ const validate = (schema, obj, next) => {
   next()
 }
 
-const createUser = (req, _res, next) => {
+const validateCreateUser = (req, _res, next) => {
   return validate(schemaCreateUser, req.body, next)
 }
 
+const validateUploadAvatar = (req, res, next) => {
+  if (!req.file) {
+    return res.status(HttpCode.UNAUTHORIZED).json({
+      status: 'error',
+      code: HttpCode.UNAUTHORIZED,
+      data: { status: 'Bad request', message: 'Not authorized' },
+    })
+  }
+  next()
+}
+
 module.exports = {
-  createUser,
+  validateCreateUser,
+  validateUploadAvatar,
 }
